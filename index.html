@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media Downloader</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: #1e1e1e;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #00bcd4;
+    }
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #2c2c2c;
+      color: #e0e0e0;
+    }
+    input:focus {
+      outline: 2px solid #00bcd4;
+    }
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(135deg, #00bcd4, #3f51b5);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .video-info {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #2c2c2c;
+      border-radius: 8px;
+    }
+    .video-info h2 {
+      margin-top: 0;
+      color: #00bcd4;
+    }
+    .thumbnail {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .quality-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .quality-item {
+      flex: 1 1 calc(50% - 0.8rem);
+      background: #3a3a3a;
+      border-radius: 8px;
+      padding: 0.8rem;
+      text-align: center;
+      transition: background 0.2s ease;
+    }
+    .quality-item:hover {
+      background: #4a4a4a;
+    }
+    .quality-item a {
+      text-decoration: none;
+      color: #00bcd4;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Lime Downloader</h1>
+    <input type="text" id="videoUrl" placeholder="Masukkan URL video (TikTok, Instagram, Twitter/X, YouTube, Facebook)">
+    <button onclick="download()">Download</button>
+
+    <div id="result" class="video-info" style="display:none;">
+      <h2 id="title"></h2>
+      <img id="thumbnail" class="thumbnail" src="" alt="Thumbnail">
+      <div class="quality-list" id="qualities"></div>
+    </div>
+  </div>
+
+  <script>
+    async function download() {
+      const url = document.getElementById('videoUrl').value;
+      if (!url) {
+        alert("Masukkan URL terlebih dahulu!");
+        return;
+      }
+
+      try {
+        const res = await fetch("https://download.limenovel.my.id/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          alert("Error: " + data.detail);
+          return;
+        }
+
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('title').textContent = data.title || "Video";
+        document.getElementById('thumbnail').src = data.thumbnail || "";
+
+        const qualitiesDiv = document.getElementById('qualities');
+        qualitiesDiv.innerHTML = "";
+
+        if (data.medias && data.medias.length > 0) {
+          data.medias.forEach(media => {
+            const div = document.createElement('div');
+            div.className = "quality-item";
+            div.innerHTML = `<span>${media.quality}</span><br>
+              <a href="${media.url}" target="_blank">Download (${media.extension})</a>`;
+            qualitiesDiv.appendChild(div);
+          });
+        } else {
+          qualitiesDiv.textContent = "Tidak ada media ditemukan.";
+        }
+      } catch (err) {
+        alert("Gagal fetch: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
